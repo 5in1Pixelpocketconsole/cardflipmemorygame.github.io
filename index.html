@@ -913,10 +913,10 @@ select#difficulty:focus-visible {
 
       <form id="login-form" class="auth-form" autocomplete="on">
         <label>Username
-          <input id="login-username" type="text" autocomplete="username" required />
+          <input id="login-username" type="text" autocomplete="username" />
         </label>
         <label>Password
-          <input id="login-password" type="password" autocomplete="current-password" required />
+          <input id="login-password" type="password" autocomplete="current-password" />
         </label>
         <p id="login-error" class="auth-error"></p>
         <button type="submit" class="btn btn-primary auth-submit">Log in</button>
@@ -924,13 +924,13 @@ select#difficulty:focus-visible {
 
       <form id="signup-form" class="auth-form hidden" autocomplete="on">
         <label>Username
-          <input id="signup-username" type="text" autocomplete="username" required />
+          <input id="signup-username" type="text" autocomplete="username" />
         </label>
         <label>Password
-          <input id="signup-password" type="password" autocomplete="new-password" required />
+          <input id="signup-password" type="password" autocomplete="new-password" />
         </label>
         <label>Confirm password
-          <input id="signup-confirm" type="password" autocomplete="new-password" required />
+          <input id="signup-confirm" type="password" autocomplete="new-password" />
         </label>
         <p id="signup-error" class="auth-error"></p>
         <button type="submit" class="btn btn-primary auth-submit">Create account</button>
@@ -1036,37 +1036,47 @@ select#difficulty:focus-visible {
 
   async function handleSignup(e) {
     if (e && e.preventDefault) e.preventDefault();
-    var name = d.suUser.value.trim();
-    var pass = d.suPass.value;
-    var confirm = d.suConfirm.value;
-    if (name.length < 3) return setError(d.signupError, "Username must be at least 3 characters.");
-    if (!/^[A-Za-z0-9_]+$/.test(name)) return setError(d.signupError, "Letters, numbers and underscores only.");
-    if (pass.length < 4) return setError(d.signupError, "Password must be at least 4 characters.");
-    if (pass !== confirm) return setError(d.signupError, "Passwords don't match.");
-    var users = loadUsers();
-    if (users[name.toLowerCase()]) return setError(d.signupError, "That username is already taken.");
-    var salt = randomSalt();
-    var hash = await hashPassword(salt, pass);
-    users[name.toLowerCase()] = { name: name, salt: salt, hash: hash };
-    saveUsers(users);
-    localStorage.setItem(KEYS.session, name);
-    localStorage.setItem(KEYS.name, name);
-    d.suUser.value = d.suPass.value = d.suConfirm.value = "";
-    enterApp();
+    try {
+      var name = d.suUser.value.trim();
+      var pass = d.suPass.value;
+      var confirm = d.suConfirm.value;
+      if (!name) return setError(d.signupError, "Please enter a username.");
+      if (name.length < 3) return setError(d.signupError, "Username must be at least 3 characters.");
+      if (!pass) return setError(d.signupError, "Please enter a password.");
+      if (pass.length < 4) return setError(d.signupError, "Password must be at least 4 characters.");
+      if (pass !== confirm) return setError(d.signupError, "Passwords don't match.");
+      var users = loadUsers();
+      if (users[name.toLowerCase()]) return setError(d.signupError, "That username is already taken.");
+      var salt = randomSalt();
+      var hash = await hashPassword(salt, pass);
+      users[name.toLowerCase()] = { name: name, salt: salt, hash: hash };
+      saveUsers(users);
+      localStorage.setItem(KEYS.session, name);
+      localStorage.setItem(KEYS.name, name);
+      d.suUser.value = d.suPass.value = d.suConfirm.value = "";
+      enterApp();
+    } catch (err) {
+      setError(d.signupError, "Couldn't create account: " + (err && err.message ? err.message : err));
+    }
   }
 
   async function handleLogin(e) {
     if (e && e.preventDefault) e.preventDefault();
-    var name = d.liUser.value.trim();
-    var pass = d.liPass.value;
-    var rec = loadUsers()[name.toLowerCase()];
-    if (!rec) return setError(d.loginError, "No account with that username.");
-    var hash = await hashPassword(rec.salt, pass);
-    if (hash !== rec.hash) return setError(d.loginError, "Incorrect password.");
-    localStorage.setItem(KEYS.session, rec.name);
-    localStorage.setItem(KEYS.name, rec.name);
-    d.liUser.value = d.liPass.value = "";
-    enterApp();
+    try {
+      var name = d.liUser.value.trim();
+      var pass = d.liPass.value;
+      if (!name) return setError(d.loginError, "Please enter your username.");
+      var rec = loadUsers()[name.toLowerCase()];
+      if (!rec) return setError(d.loginError, "No account with that username.");
+      var hash = await hashPassword(rec.salt, pass);
+      if (hash !== rec.hash) return setError(d.loginError, "Incorrect password.");
+      localStorage.setItem(KEYS.session, rec.name);
+      localStorage.setItem(KEYS.name, rec.name);
+      d.liUser.value = d.liPass.value = "";
+      enterApp();
+    } catch (err) {
+      setError(d.loginError, "Couldn't log in: " + (err && err.message ? err.message : err));
+    }
   }
 
   function playAsGuest() {
