@@ -859,7 +859,6 @@ select#difficulty:focus-visible {
         </div>
         <ol id="leaderboard-list" class="lb-list" aria-live="polite"></ol>
         <p class="lb-hint">Best times for the selected difficulty.</p>
-        <button id="clear-scores" class="btn btn-ghost" type="button">Clear scores</button>
       </aside>
     </main>
 
@@ -1211,7 +1210,6 @@ select#difficulty:focus-visible {
     el.mute = document.getElementById("mute");
     el.lbList = document.getElementById("leaderboard-list");
     el.lbTag = document.getElementById("lb-difficulty");
-    el.clearScores = document.getElementById("clear-scores");
     el.modal = document.getElementById("win-modal");
     el.finalTime = document.getElementById("final-time");
     el.finalMoves = document.getElementById("final-moves");
@@ -1637,14 +1635,6 @@ select#difficulty:focus-visible {
     });
   }
 
-  function clearScores() {
-    const all = getAllScores();
-    delete all[state.difficulty];
-    localStorage.setItem(STORAGE_KEYS.scores, JSON.stringify(all));
-    state.newEntry = null;
-    renderLeaderboard();
-  }
-
   /* --------------------- Init -------------------------- */
 
   function loadPrefs() {
@@ -1667,7 +1657,6 @@ select#difficulty:focus-visible {
     });
 
     el.mute.addEventListener("click", toggleSound);
-    el.clearScores.addEventListener("click", clearScores);
     el.saveScore.addEventListener("click", saveScore);
 
     el.playerName.addEventListener("keydown", function (e) {
