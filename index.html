@@ -617,10 +617,200 @@ select#difficulty:focus-visible {
   }
 }
 
+/* ---------- Account bar ---------- */
+.account-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.account-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.account-btn {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.account-btn:hover {
+  background: var(--surface-strong);
+  color: var(--text);
+}
+
+/* ---------- Auth screen ---------- */
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background:
+    radial-gradient(900px 500px at 15% -10%, var(--bg-2), transparent 60%),
+    radial-gradient(800px 600px at 110% 10%, var(--bg-3), transparent 55%),
+    linear-gradient(160deg, var(--bg-1), #120f2e 70%);
+}
+
+.auth-screen.hidden {
+  display: none;
+}
+
+.auth-card {
+  width: min(400px, 94vw);
+  background: linear-gradient(160deg, #241d57, #1a1442);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 26px 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.auth-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.auth-brand h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.auth-brand p {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.auth-tab {
+  flex: 1;
+  font: inherit;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  padding: 9px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.auth-tab.active {
+  background: linear-gradient(180deg, var(--accent), #5a49e8);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(109, 93, 252, 0.4);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-form.hidden {
+  display: none;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.auth-form input {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 12px;
+}
+
+.auth-form input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.auth-submit {
+  margin-top: 4px;
+  padding: 12px;
+  font-size: 1rem;
+}
+
+.auth-error {
+  margin: 0;
+  min-height: 1em;
+  color: var(--bad);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: none;
+}
+
+.auth-guest {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  font: inherit;
+  font-size: 0.86rem;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-guest:hover {
+  color: var(--text);
+}
+
+.auth-note {
+  margin: 14px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--text-dim);
+  text-align: center;
+}
+
   </style>
 </head>
 <body>
   <div class="app">
+    <div class="account-bar">
+      <span id="account-label" class="account-label"></span>
+      <button id="auth-action" class="account-btn" type="button">Log out</button>
+    </div>
+
     <header class="topbar">
       <h1 class="title"><span class="title-emoji" aria-hidden="true">🧠</span> Emoji Memory Match</h1>
       <p class="subtitle">Flip the cards two at a time and find every matching pair.</p>
@@ -705,7 +895,245 @@ select#difficulty:focus-visible {
     </div>
   </div>
 
+  <!-- Auth screen (client-side local accounts) -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="auth-emoji" aria-hidden="true">🧠</span>
+        <div>
+          <h1>Emoji Memory Match</h1>
+          <p>Sign in to save your name on the leaderboard.</p>
+        </div>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button id="tab-login" class="auth-tab active" type="button">Log in</button>
+        <button id="tab-signup" class="auth-tab" type="button">Sign up</button>
+      </div>
+
+      <form id="login-form" class="auth-form" autocomplete="on">
+        <label>Username
+          <input id="login-username" type="text" autocomplete="username" required />
+        </label>
+        <label>Password
+          <input id="login-password" type="password" autocomplete="current-password" required />
+        </label>
+        <p id="login-error" class="auth-error"></p>
+        <button type="submit" class="btn btn-primary auth-submit">Log in</button>
+      </form>
+
+      <form id="signup-form" class="auth-form hidden" autocomplete="on">
+        <label>Username
+          <input id="signup-username" type="text" autocomplete="username" required />
+        </label>
+        <label>Password
+          <input id="signup-password" type="password" autocomplete="new-password" required />
+        </label>
+        <label>Confirm password
+          <input id="signup-confirm" type="password" autocomplete="new-password" required />
+        </label>
+        <p id="signup-error" class="auth-error"></p>
+        <button type="submit" class="btn btn-primary auth-submit">Create account</button>
+      </form>
+
+      <button id="guest-btn" class="auth-guest" type="button">Skip — play as guest</button>
+      <p class="auth-note">Accounts are stored only in this browser to personalise your game — this isn't secure sign-in, so don't reuse an important password.</p>
+    </div>
+  </div>
+
   <script>
+/* ===========================================================
+   Emoji Memory Match — client-side auth (local accounts)
+   NOTE: Accounts are kept in localStorage in the visitor's
+   own browser. This personalises the game; it is NOT secure
+   server-side authentication.
+   =========================================================== */
+
+(function () {
+  "use strict";
+
+  var KEYS = {
+    users: "emojiMemoryMatch.users.v1",
+    session: "emojiMemoryMatch.session.v1",
+    name: "emojiMemoryMatch.name.v1" // shared with the game for name prefill
+  };
+
+  var d = {};
+
+  function byId(id) { return document.getElementById(id); }
+
+  function loadUsers() {
+    try { return JSON.parse(localStorage.getItem(KEYS.users)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveUsers(u) { localStorage.setItem(KEYS.users, JSON.stringify(u)); }
+  function currentUser() { return localStorage.getItem(KEYS.session) || null; }
+
+  function randomSalt() {
+    var a = new Uint8Array(16);
+    if (window.crypto && window.crypto.getRandomValues) {
+      window.crypto.getRandomValues(a);
+    } else {
+      for (var i = 0; i < a.length; i++) a[i] = (i * 31 + 7) % 256;
+    }
+    return Array.prototype.map.call(a, function (b) {
+      return ("0" + b.toString(16)).slice(-2);
+    }).join("");
+  }
+
+  async function hashPassword(salt, password) {
+    var msg = salt + ":" + password;
+    if (window.crypto && window.crypto.subtle) {
+      var bytes = new TextEncoder().encode(msg);
+      var digest = await window.crypto.subtle.digest("SHA-256", bytes);
+      return Array.prototype.map.call(new Uint8Array(digest), function (b) {
+        return ("0" + b.toString(16)).slice(-2);
+      }).join("");
+    }
+    // Fallback for non-secure contexts (weaker — demo only).
+    var h = 5381;
+    for (var i = 0; i < msg.length; i++) h = (((h << 5) + h) ^ msg.charCodeAt(i)) >>> 0;
+    return "fb" + h.toString(16);
+  }
+
+  function setError(el, msg) {
+    el.textContent = msg || "";
+    el.style.display = msg ? "block" : "none";
+  }
+
+  function setTab(which) {
+    var login = which !== "signup";
+    d.tabLogin.classList.toggle("active", login);
+    d.tabSignup.classList.toggle("active", !login);
+    d.loginForm.classList.toggle("hidden", !login);
+    d.signupForm.classList.toggle("hidden", login);
+    setError(d.loginError, "");
+    setError(d.signupError, "");
+  }
+
+  function updateAccountBar() {
+    var user = currentUser();
+    if (user) {
+      d.accountLabel.textContent = "👤 " + user;
+      d.authAction.textContent = "Log out";
+      d.authAction.dataset.mode = "logout";
+    } else {
+      d.accountLabel.textContent = "Playing as guest";
+      d.authAction.textContent = "Sign in";
+      d.authAction.dataset.mode = "signin";
+    }
+  }
+
+  function enterApp() {
+    d.screen.classList.add("hidden");
+    updateAccountBar();
+  }
+
+  function showAuth() {
+    d.screen.classList.remove("hidden");
+    setTab("login");
+  }
+
+  async function handleSignup(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var name = d.suUser.value.trim();
+    var pass = d.suPass.value;
+    var confirm = d.suConfirm.value;
+    if (name.length < 3) return setError(d.signupError, "Username must be at least 3 characters.");
+    if (!/^[A-Za-z0-9_]+$/.test(name)) return setError(d.signupError, "Letters, numbers and underscores only.");
+    if (pass.length < 4) return setError(d.signupError, "Password must be at least 4 characters.");
+    if (pass !== confirm) return setError(d.signupError, "Passwords don't match.");
+    var users = loadUsers();
+    if (users[name.toLowerCase()]) return setError(d.signupError, "That username is already taken.");
+    var salt = randomSalt();
+    var hash = await hashPassword(salt, pass);
+    users[name.toLowerCase()] = { name: name, salt: salt, hash: hash };
+    saveUsers(users);
+    localStorage.setItem(KEYS.session, name);
+    localStorage.setItem(KEYS.name, name);
+    d.suUser.value = d.suPass.value = d.suConfirm.value = "";
+    enterApp();
+  }
+
+  async function handleLogin(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var name = d.liUser.value.trim();
+    var pass = d.liPass.value;
+    var rec = loadUsers()[name.toLowerCase()];
+    if (!rec) return setError(d.loginError, "No account with that username.");
+    var hash = await hashPassword(rec.salt, pass);
+    if (hash !== rec.hash) return setError(d.loginError, "Incorrect password.");
+    localStorage.setItem(KEYS.session, rec.name);
+    localStorage.setItem(KEYS.name, rec.name);
+    d.liUser.value = d.liPass.value = "";
+    enterApp();
+  }
+
+  function playAsGuest() {
+    localStorage.removeItem(KEYS.session);
+    enterApp();
+  }
+
+  function logout() {
+    localStorage.removeItem(KEYS.session);
+    showAuth();
+    updateAccountBar();
+  }
+
+  function onAuthAction() {
+    if (d.authAction.dataset.mode === "logout") logout();
+    else showAuth();
+  }
+
+  function initAuth() {
+    d.screen = byId("auth-screen");
+    if (!d.screen) return;
+    d.tabLogin = byId("tab-login");
+    d.tabSignup = byId("tab-signup");
+    d.loginForm = byId("login-form");
+    d.signupForm = byId("signup-form");
+    d.liUser = byId("login-username");
+    d.liPass = byId("login-password");
+    d.loginError = byId("login-error");
+    d.suUser = byId("signup-username");
+    d.suPass = byId("signup-password");
+    d.suConfirm = byId("signup-confirm");
+    d.signupError = byId("signup-error");
+    d.guestBtn = byId("guest-btn");
+    d.accountLabel = byId("account-label");
+    d.authAction = byId("auth-action");
+
+    d.tabLogin.addEventListener("click", function () { setTab("login"); });
+    d.tabSignup.addEventListener("click", function () { setTab("signup"); });
+    d.loginForm.addEventListener("submit", handleLogin);
+    d.signupForm.addEventListener("submit", handleSignup);
+    d.guestBtn.addEventListener("click", playAsGuest);
+    d.authAction.addEventListener("click", onAuthAction);
+
+    setError(d.loginError, "");
+    setError(d.signupError, "");
+
+    if (currentUser()) {
+      enterApp();
+    } else {
+      showAuth();
+      updateAccountBar();
+    }
+
+    // Exposed for the game and automated tests.
+    window.__auth = {
+      currentUser: currentUser,
+      signup: function (u, p) { d.suUser.value = u; d.suPass.value = p; d.suConfirm.value = p; return handleSignup(); },
+      login: function (u, p) { d.liUser.value = u; d.liPass.value = p; return handleLogin(); },
+      logout: logout,
+      guest: playAsGuest
+    };
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initAuth);
+  else initAuth();
+})();
+
 /* ===========================================================
    Emoji Memory Match — game engine (vanilla JS)
    Features: difficulty levels, timer, move counter,
